@@ -1,0 +1,8 @@
+plugin: hetzner.hcloud.hcloud
+api_token: "{{ lookup('ansible.builtin.env', 'HCLOUD_TOKEN') }}"
+keyed_groups:
+  - key: labels.role
+    separator: ""
+compose:
+  ansible_host: public_net.ipv4_ip
+  ansible_ssh_private_key_file: "~/.ssh/id_rsa"

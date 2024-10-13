@@ -1,0 +1,46 @@
+---
+- name: Update packages
+  ansible.builtin.apt:
+    name: "*"
+    state: latest
+    only_upgrade: true
+
+- name: Check if reboot required
+  ansible.builtin.stat:
+    path: /var/run/reboot-required
+  register: reboot_required
+
+- name: Reboot server
+  ansible.builtin.reboot:
+  when: reboot_required.stat.exists
+
+# TODO
+# Install and configure Fail2ban
+
+- name: Create Factorio compose directory
+  ansible.builtin.file:
+    path: /root/factorio
+    state: directory
+    owner: root
+    group: root
+    mode: '0750'
+
+- name: Copy docker-compose.yml
+  ansible.builtin.template:
+    src: "{{ role_path }}/files/docker-compose.yml"
+    dest: /root/factorio/docker-compose.yml
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Create Factorio data folder
+  ansible.builtin.file:
+    path: /opt/factorio
+    state: directory
+    owner: 845
+    group: 845
+    mode: '0755'
+
+- name: Start Factorio server
+  community.docker.docker_compose_v2:
+    project_src: factorio

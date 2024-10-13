@@ -1,0 +1,20 @@
+---
+- name: Deploy Factorio server
+  hosts: localhost
+  vars:
+    terraform_directory: "{{ playbook_dir }}/terraform"
+
+  tasks:
+    - name: Deploy Terraform project
+      community.general.terraform:
+        project_path: "{{ terraform_directory }}"
+        state: present
+        force_init: true
+        provider_upgrade: true
+        variables_file: "{{ terraform_directory }}/factorio.tfvars"
+
+- name: Setup Factorio server
+  hosts: ansible_managed_vm
+  remote_user: root
+  roles:
+    - factorio_init

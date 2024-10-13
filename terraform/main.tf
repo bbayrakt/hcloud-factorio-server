@@ -12,7 +12,7 @@ provider "hcloud" {
 }
 
 resource "hcloud_server" "factorio" {
-    name = "Factorio"
+    name = "factorio"
     datacenter = var.datacenter
     image = var.image
     server_type = var.server_type
@@ -24,6 +24,10 @@ resource "hcloud_server" "factorio" {
       ipv6_enabled = true
 
       ipv4 = hcloud_primary_ip.factorio_ipv4.id
+    }
+
+    labels = {
+      role = "ansible_managed_vm"
     }
 }
 
@@ -74,6 +78,17 @@ resource "hcloud_firewall" "factorio" {
         direction = "in"
         protocol = "udp"
         port = "34197"
+        source_ips = [
+            "0.0.0.0/0",
+            "::/0"
+        ]
+    }
+
+    # Factorio RCON
+    rule {
+        direction = "in"
+        protocol = "tcp"
+        port = "27015"
         source_ips = [
             "0.0.0.0/0",
             "::/0"
