@@ -1,0 +1,6 @@
+hcloud_api_token = "xxxxxxx"
+
+server_type = "cx32"
+datacenter = "fsn1-dc14"
+image = "docker-ce"
+pub_ssh_key = "~/.ssh/id_rsa.pub"
