@@ -17,5 +17,6 @@ Adjust the given `/vars/factorio.yml` as needed.
 
 ## Usage
 ```
+export TF_VAR_hcloud_api_token=<your_hcloud_api_key>
 ansible-playbook factorio_init.yml
 ```
