@@ -8,7 +8,7 @@ Adjust the given `/vars/factorio.yml` as needed.
 | `server_type` | Server type. The playbook only supports x86, as ARM support for Factorio server is experimental. List of server types: https://docs.hetzner.com/cloud/servers/overview/ | "cx32" |
 | `datacenter` | Datacenter to deploy in. A list of available locations: https://docs.hetzner.com/cloud/general/locations/ | "fsn1-dc14" |
 | `image` | VM image to use. The playbook is written with "docker-ce" in mind only at the moment. | "docker-ce" |
-| 'pub_ssh_key' | Path to your SSH public key to upload to the VM. | "~/.ssh/id_rsa.pub" |
+| `pub_ssh_key` | Path to your SSH public key to upload to the VM. | "~/.ssh/id_rsa.pub" |
 
 ## Prerequisites
 - Ansible
