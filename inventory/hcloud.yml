@@ -1,5 +1,5 @@
 plugin: hetzner.hcloud.hcloud
-api_token: "{{ lookup('ansible.builtin.env', 'HCLOUD_TOKEN') }}"
+api_token: "{{ lookup('env', 'TF_VAR_hcloud_api_token') }}"
 keyed_groups:
   - key: labels.role
     separator: ""
