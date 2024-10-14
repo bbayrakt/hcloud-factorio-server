@@ -1,0 +1,40 @@
+---
+- name: Save game and destroy Factorio server
+  hosts: ansible_managed_vm
+  vars:
+    terraform_directory: "{{ playbook_dir }}/terraform"
+  vars_files:
+    - vars/factorio.yml
+  remote_user: root
+
+  tasks:
+    - name: Save the game
+      ansible.builtin.shell: |
+        set -o pipefail
+        docker run -it outdead/rcon \
+        ./rcon -a $(hostname -I | awk '{print $1}'):27015 -p $(cat /opt/factorio/config/rconpw) \
+        "/save ansible_managed_save.zip"
+      args:
+        executable: /bin/bash
+      register: save_file
+      changed_when: save_file.rc != 0
+
+    - name: Download the save file
+      ansible.builtin.fetch:
+        src: /opt/factorio/saves/ansible_managed_save.zip
+        dest: "{{ playbook_dir }}/"
+        flat: true
+
+    - name: Destroy server and components
+      community.general.terraform:
+        project_path: "{{ terraform_directory }}"
+        state: absent
+        force_init: true
+        provider_upgrade: true
+        variables:
+          hcloud_api_token: "{{ lookup('env', 'TF_VAR_hcloud_api_token') }}"
+          server_type: "{{ server_type }}"
+          datacenter: "{{ datacenter }}"
+          image: "{{ image }}"
+          pub_ssh_key: "{{ pub_ssh_key }}"
+      delegate_to: localhost
