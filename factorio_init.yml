@@ -3,6 +3,8 @@
   hosts: localhost
   vars:
     terraform_directory: "{{ playbook_dir }}/terraform"
+  vars_files:
+    - vars/factorio.yml
 
   tasks:
     - name: Deploy Terraform project
@@ -11,10 +13,35 @@
         state: present
         force_init: true
         provider_upgrade: true
-        variables_file: "{{ terraform_directory }}/factorio.tfvars"
+        variables:
+          hcloud_api_token: "{{ lookup('env', 'TF_VAR_hcloud_api_token') }}"
+          server_type: "{{ server_type }}"
+          datacenter: "{{ datacenter }}"
+          image: "{{ image }}"
+          pub_ssh_key: "{{ pub_ssh_key }}"
+
+    - name: Get the public IP address of Factorio server
+      ansible.builtin.command: terraform output -raw ipv4_address
+      register: factorio_ip
+      args:
+        chdir: "{{ terraform_directory }}"
+      changed_when: factorio_ip.rc != 0
+
+    - name: Add Factorio server to the inventory
+      ansible.builtin.add_host:
+        groups: ansible_managed_vm
+        name: "{{ factorio_ip.stdout }}"
+
+    - name: Wait for server to come online
+      ansible.builtin.wait_for:
+        host: "{{ factorio_ip.stdout }}"
+        port: 22
+        delay: 10
 
 - name: Setup Factorio server
   hosts: ansible_managed_vm
   remote_user: root
+  vars_files:
+    - /vars/factorio.yml
   roles:
     - factorio_init

@@ -33,7 +33,7 @@ resource "hcloud_server" "factorio" {
 
 resource "hcloud_primary_ip" "factorio_ipv4" {
   name          = "factorio_ipv4"
-  datacenter    = "fsn1-dc14"
+  datacenter    = var.datacenter
   type          = "ipv4"
   assignee_type = "server"
   auto_delete   = true
@@ -45,7 +45,7 @@ resource "hcloud_primary_ip" "factorio_ipv4" {
 
 resource "hcloud_primary_ip" "factorio_ipv6" {
   name          = "factorio_ipv6"
-  datacenter    = "fsn1-dc14"
+  datacenter    = var.datacenter
   type          = "ipv6"
   assignee_type = "server"
   auto_delete   = true
