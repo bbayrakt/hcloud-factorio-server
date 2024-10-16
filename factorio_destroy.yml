@@ -48,7 +48,7 @@
           retry_wait_min: "{{ tf_retry_wait_min }}"
       delegate_to: localhost
 
-    - name: Create CloudFlare DNS record
+    - name: Delete CloudFlare DNS record
       community.general.cloudflare_dns:
         zone: "{{ cf_zone }}"
         record: "{{ cf_record }}"
