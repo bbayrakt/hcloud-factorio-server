@@ -12,3 +12,8 @@ tf_password: "glpat-xxxxxxx"
 tf_lock_method: "POST"
 tf_unlock_method: "DELETE"
 tf_retry_wait_min: 5
+
+# CloudFlare DNS - OPTIONAL
+cf_api_token: "xxxxxxxx"
+cf_zone: "example.com"
+cf_record: "factorio" #Subdomain
