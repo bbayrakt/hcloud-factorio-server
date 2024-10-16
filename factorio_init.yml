@@ -7,7 +7,7 @@
     - vars/factorio.yml
 
   tasks:
-    - name: Deploy Terraform project
+    - name: Deploy server and components
       community.general.terraform:
         project_path: "{{ terraform_directory }}"
         state: present
@@ -19,6 +19,15 @@
           datacenter: "{{ datacenter }}"
           image: "{{ image }}"
           pub_ssh_key: "{{ pub_ssh_key }}"
+        backend_config:
+          address: "{{ tf_address }}"
+          lock_address: "{{ tf_lock_address }}"
+          unlock_address: "{{ tf_unlock_address }}"
+          username: "{{ tf_username }}"
+          password: "{{ tf_password }}"
+          lock_method: "{{ tf_lock_method }}"
+          unlock_method: "{{ tf_unlock_method }}"
+          retry_wait_min: "{{ tf_retry_wait_min }}"
 
     - name: Get the public IP address of Factorio server
       ansible.builtin.command: terraform output -raw ipv4_address

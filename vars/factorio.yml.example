@@ -1,0 +1,14 @@
+server_type: "cx32"
+datacenter: "fsn1-dc14"
+image: "docker-ce"
+pub_ssh_key: "~/.ssh/id_rsa.pub"
+
+# GitLab Terraform State Backend
+tf_address: "https://gitlab.com/api/v4/projects/xxxxx/terraform/state/default"
+tf_lock_address: "https://gitlab.com/api/v4/projects/xxxxxx/terraform/state/default/lock"
+tf_unlock_address: "https://gitlab.com/api/v4/projects/xxxxxx/terraform/state/default/lock"
+tf_username: "xxxxxx"
+tf_password: "glpat-xxxxxxx"
+tf_lock_method: "POST"
+tf_unlock_method: "DELETE"
+tf_retry_wait_min: 5
