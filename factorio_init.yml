@@ -22,7 +22,7 @@
         backend_config:
           address: "{{ tf_address }}"
           lock_address: "{{ tf_lock_address }}"
-          unlock_address: "{{ tf_unlock_address }}"
+          unlock_address: "{{ tf_lock_address }}"
           username: "{{ tf_username }}"
           password: "{{ tf_password }}"
           lock_method: "{{ tf_lock_method }}"
@@ -35,6 +35,22 @@
       args:
         chdir: "{{ terraform_directory }}"
       changed_when: factorio_ip.rc != 0
+
+    - name: Create CloudFlare DNS record
+      community.general.cloudflare_dns:
+        zone: "{{ cf_zone }}"
+        record: "{{ cf_record }}"
+        type: A
+        value: "{{ factorio_ip.stdout }}"
+        api_token: "{{ cf_api_token }}"
+        ttl: 120
+      when:
+        - cf_api_token is defined
+        - cf_api_token != ''
+        - cf_zone is defined
+        - cf_zone != ''
+        - cf_record is defined
+        - cf_record != ''
 
     - name: Add Factorio server to the inventory
       ansible.builtin.add_host:
