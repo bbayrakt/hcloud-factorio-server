@@ -4,6 +4,7 @@
     name: "*"
     state: latest
     only_upgrade: true
+    update_cache: true
 
 - name: Check if reboot required
   ansible.builtin.stat:
@@ -13,6 +14,9 @@
 - name: Reboot server
   ansible.builtin.reboot:
   when: reboot_required.stat.exists
+
+# TODO
+# Harden sshd_config
 
 # TODO
 # Install and configure Fail2ban
@@ -25,8 +29,8 @@
     group: root
     mode: '0750'
 
-- name: Copy docker-compose.yml
-  ansible.builtin.template:
+- name: Create initial docker-compose.yml
+  ansible.builtin.copy:
     src: "{{ role_path }}/files/docker-compose.yml"
     dest: /root/factorio/docker-compose.yml
     owner: root
@@ -40,6 +44,39 @@
     owner: 845
     group: 845
     mode: '0755'
+
+- name: Initialize Factorio server
+  community.docker.docker_compose_v2:
+    project_src: factorio
+
+- name: Stop Factorio server
+  community.docker.docker_compose_v2:
+    project_src: factorio
+    state: stopped
+
+- name: Check if Ansible managed Factorio save exists
+  ansible.builtin.stat:
+    path: "{{ playbook_dir }}/ansible_managed_save.zip"
+  register: ansible_managed_save
+  delegate_to: localhost
+
+- name: Copy Ansible managed Factorio save
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/ansible_managed_save.zip"
+    dest: /opt/factorio/saves/ansible_managed_save.zip
+    owner: 845
+    group: 845
+    mode: '0755'
+  when: ansible_managed_save.stat.exists
+
+- name: Update docker-compose.yml
+  ansible.builtin.template:
+    src: "{{ role_path }}/templates/docker-compose.yml.j2"
+    dest: /root/factorio/docker-compose.yml
+    owner: root
+    group: root
+    mode: '0644'
+  when: ansible_managed_save.stat.exists
 
 - name: Start Factorio server
   community.docker.docker_compose_v2:
