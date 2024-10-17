@@ -34,14 +34,16 @@
       register: factorio_ipv4
       args:
         chdir: "{{ terraform_directory }}"
-      changed_when: factorio_ipv4.rc != 0
+      changed_when: false
+      failed_when: factorio_ipv4.rc != 0
 
     - name: Get the public IPv6 address of Factorio server
       ansible.builtin.command: terraform output -raw ipv6_address
       register: factorio_ipv6
       args:
         chdir: "{{ terraform_directory }}"
-      changed_when: factorio_ipv6.rc != 0
+      changed_when: false
+      failed_when: factorio_ipv4.rc != 0
 
     - name: Create CloudFlare DNS A record
       community.general.cloudflare_dns:
