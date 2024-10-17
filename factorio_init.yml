@@ -29,19 +29,26 @@
           unlock_method: "{{ tf_unlock_method }}"
           retry_wait_min: "{{ tf_retry_wait_min }}"
 
-    - name: Get the public IP address of Factorio server
+    - name: Get the public IPv4 address of Factorio server
       ansible.builtin.command: terraform output -raw ipv4_address
-      register: factorio_ip
+      register: factorio_ipv4
       args:
         chdir: "{{ terraform_directory }}"
-      changed_when: factorio_ip.rc != 0
+      changed_when: factorio_ipv4.rc != 0
 
-    - name: Create CloudFlare DNS record
+    - name: Get the public IPv6 address of Factorio server
+      ansible.builtin.command: terraform output -raw ipv6_address
+      register: factorio_ipv6
+      args:
+        chdir: "{{ terraform_directory }}"
+      changed_when: factorio_ipv6.rc != 0
+
+    - name: Create CloudFlare DNS A record
       community.general.cloudflare_dns:
         zone: "{{ cf_zone }}"
         record: "{{ cf_record }}"
         type: A
-        value: "{{ factorio_ip.stdout }}"
+        value: "{{ factorio_ipv4.stdout }}"
         api_token: "{{ cf_api_token }}"
         ttl: 120
       when:
@@ -52,16 +59,30 @@
         - cf_record is defined
         - cf_record != ''
 
-    - name: Add Factorio server to the inventory
-      ansible.builtin.add_host:
-        groups: ansible_managed_vm
-        name: "{{ factorio_ip.stdout }}"
+    - name: Create CloudFlare DNS AAAA record
+      community.general.cloudflare_dns:
+        zone: "{{ cf_zone }}"
+        record: "{{ cf_record }}"
+        type: AAAA
+        value: "{{ factorio_ipv6.stdout }}"
+        api_token: "{{ cf_api_token }}"
+        ttl: 120
+      when:
+        - cf_api_token is defined
+        - cf_api_token != ''
+        - cf_zone is defined
+        - cf_zone != ''
+        - cf_record is defined
+        - cf_record != ''
 
     - name: Wait for server to come online
       ansible.builtin.wait_for:
-        host: "{{ factorio_ip.stdout }}"
+        host: "{{ factorio_ipv4.stdout }}"
         port: 22
         delay: 10
+
+    - name: Refresh Ansible inventory
+      ansible.builtin.meta: "refresh_inventory"
 
 - name: Setup Factorio server
   hosts: ansible_managed_vm
