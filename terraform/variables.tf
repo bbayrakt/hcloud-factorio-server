@@ -1,20 +1,20 @@
 variable "hcloud_api_token" {
-    sensitive = true
-    type = string
+  sensitive = true
+  type      = string
 }
 
 variable "server_type" {
-    type = string
+  type = string
 }
 
 variable "datacenter" {
-    type = string
+  type = string
 }
 
 variable "image" {
-    type = string
+  type = string
 }
 
 variable "pub_ssh_key" {
-    type = string
+  type = string
 }
