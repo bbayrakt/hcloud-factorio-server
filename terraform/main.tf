@@ -26,6 +26,7 @@ resource "hcloud_server" "factorio" {
       ipv6_enabled = true
 
       ipv4 = hcloud_primary_ip.factorio_ipv4.id
+      ipv6 = hcloud_primary_ip.factorio_ipv6.id
     }
 
     labels = {
@@ -80,17 +81,6 @@ resource "hcloud_firewall" "factorio" {
         direction = "in"
         protocol = "udp"
         port = "34197"
-        source_ips = [
-            "0.0.0.0/0",
-            "::/0"
-        ]
-    }
-
-    # Factorio RCON
-    rule {
-        direction = "in"
-        protocol = "tcp"
-        port = "27015"
         source_ips = [
             "0.0.0.0/0",
             "::/0"
