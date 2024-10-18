@@ -78,6 +78,39 @@
     mode: '0644'
   when: ansible_managed_save.stat.exists
 
+- name: Generate server-whitelist.json
+  ansible.builtin.copy:
+    dest: /opt/factorio/config/server-whitelist.json
+    content: "{{ factorio_whitelist | to_nice_json }}\n"
+    owner: 845
+    group: 845
+    mode: '0644'
+  when:
+    - factorio_whitelist is defined
+    - factorio_whitelist | length > 0
+
+- name: Generate server-banlist.json
+  ansible.builtin.copy:
+    dest: /opt/factorio/config/server-banlist.json
+    content: "{{ factorio_banlist | to_nice_json }}\n"
+    owner: 845
+    group: 845
+    mode: '0644'
+  when:
+    - factorio_banlist is defined
+    - factorio_banlist | length > 0
+
+- name: Generate server-adminlist.json
+  ansible.builtin.copy:
+    dest: /opt/factorio/config/server-adminlist.json
+    content: "{{ factorio_adminlist | to_nice_json }}\n"
+    owner: 845
+    group: 845
+    mode: '0644'
+  when:
+    - factorio_adminlist is defined
+    - factorio_adminlist | length > 0
+
 - name: Start Factorio server
   community.docker.docker_compose_v2:
     project_src: factorio
