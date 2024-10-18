@@ -1,7 +1,8 @@
-server_type: "cx32"
-datacenter: "fsn1-dc14"
-image: "docker-ce"
-pub_ssh_key: "~/.ssh/id_rsa.pub"
+# Hetzner Cloud
+hcloud_server_type: "cx32"
+hcloud_datacenter: "fsn1-dc14"
+hcloud_image: "docker-ce"
+hcloud_pub_ssh_key: "~/.ssh/id_rsa.pub"
 
 # GitLab Terraform State Backend
 tf_address: "https://gitlab.com/api/v4/projects/xxxxx/terraform/state/default"
@@ -17,3 +18,12 @@ tf_retry_wait_min: 5
 cf_api_token: "xxxxxxxx"
 cf_zone: "example.com"
 cf_record: "factorio" #Subdomain
+
+# factorio
+factorio_servername: "<your_servername>"
+factorio_username: "<your_username>"
+factorio_token: "<your_factorio_token>"
+factorio_whitelist: ["list","of","players"] - optional
+factorio_banlist: ["list","of","players"] - optional
+factorio_adminlist: ["list","of","players"] - optional
+factorio_serverpassword: "<your_server_password>"
