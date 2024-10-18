@@ -90,6 +90,6 @@
   hosts: ansible_managed_vm
   remote_user: root
   vars_files:
-    - /vars/factorio.yml
+    - vars/factorio.yml
   roles:
     - factorio_init
