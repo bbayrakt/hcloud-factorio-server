@@ -24,10 +24,10 @@
           lock_address: "{{ tf_lock_address }}"
           unlock_address: "{{ tf_lock_address }}"
           username: "{{ tf_username }}"
-          password: "{{ tf_password }}"
-          lock_method: "{{ tf_lock_method }}"
-          unlock_method: "{{ tf_unlock_method }}"
-          retry_wait_min: "{{ tf_retry_wait_min }}"
+          password: "{{ tf_token }}"
+          lock_method: "POST"
+          unlock_method: "DELETE"
+          retry_wait_min: "5"
 
     - name: Get the public IPv4 address of Factorio server
       ansible.builtin.command: terraform output -raw ipv4_address
