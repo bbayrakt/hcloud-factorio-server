@@ -45,20 +45,20 @@
     group: 845
     mode: '0755'
 
-- name: Initialize Factorio server
-  community.docker.docker_compose_v2:
-    project_src: factorio
-
-- name: Stop Factorio server
-  community.docker.docker_compose_v2:
-    project_src: factorio
-    state: stopped
-
 - name: Check if Ansible managed Factorio save exists
   ansible.builtin.stat:
     path: "{{ playbook_dir }}/ansible_managed_save.zip"
   register: ansible_managed_save
   delegate_to: localhost
+
+- name: Create save folder
+  ansible.builtin.file:
+    path: /opt/factorio/saves
+    state: directory
+    owner: 845
+    group: 845
+    mode: '0755'
+  when: ansible_managed_save.stat.exists
 
 - name: Copy Ansible managed Factorio save
   ansible.builtin.copy:
@@ -66,17 +66,20 @@
     dest: /opt/factorio/saves/ansible_managed_save.zip
     owner: 845
     group: 845
-    mode: '0755'
-  when: ansible_managed_save.stat.exists
-
-- name: Update docker-compose.yml
-  ansible.builtin.template:
-    src: "{{ role_path }}/templates/docker-compose.yml.j2"
-    dest: /root/factorio/docker-compose.yml
-    owner: root
-    group: root
     mode: '0644'
   when: ansible_managed_save.stat.exists
+
+- name: Create config folder
+  ansible.builtin.file:
+    path: /opt/factorio/config
+    state: directory
+    owner: 845
+    group: 845
+    mode: '0755'
+  when:
+    - (factorio_whitelist is defined and factorio_whitelist | length > 0) or
+      (factorio_banlist is defined and factorio_banlist | length > 0) or
+      (factorio_adminlist is defined and factorio_adminlist | length > 0)
 
 - name: Generate server-whitelist.json
   ansible.builtin.copy:
