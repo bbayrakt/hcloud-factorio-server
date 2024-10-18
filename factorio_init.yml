@@ -15,19 +15,19 @@
         provider_upgrade: true
         variables:
           hcloud_api_token: "{{ lookup('env', 'TF_VAR_hcloud_api_token') }}"
-          server_type: "{{ server_type }}"
-          datacenter: "{{ datacenter }}"
-          image: "{{ image }}"
-          pub_ssh_key: "{{ pub_ssh_key }}"
+          server_type: "{{ hcloud_server_type }}"
+          datacenter: "{{ hcloud_datacenter }}"
+          image: "{{ hcloud_image }}"
+          pub_ssh_key: "{{ hcloud_pub_ssh_key }}"
         backend_config:
           address: "{{ tf_address }}"
           lock_address: "{{ tf_lock_address }}"
           unlock_address: "{{ tf_lock_address }}"
           username: "{{ tf_username }}"
-          password: "{{ tf_password }}"
-          lock_method: "{{ tf_lock_method }}"
-          unlock_method: "{{ tf_unlock_method }}"
-          retry_wait_min: "{{ tf_retry_wait_min }}"
+          password: "{{ tf_token }}"
+          lock_method: "POST"
+          unlock_method: "DELETE"
+          retry_wait_min: "5"
 
     - name: Get the public IPv4 address of Factorio server
       ansible.builtin.command: terraform output -raw ipv4_address
