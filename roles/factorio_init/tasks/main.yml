@@ -111,6 +111,14 @@
     - factorio_adminlist is defined
     - factorio_adminlist | length > 0
 
+- name: Generate server-settings.json
+  ansible.builtin.template:
+    src: "{{ role_path }}/templates/server-settings.json.j2"
+    dest: /opt/factorio/config/server-settings.json
+    owner: 845
+    group: 845
+    mode: '0644'
+
 - name: Start Factorio server
   community.docker.docker_compose_v2:
     project_src: factorio
