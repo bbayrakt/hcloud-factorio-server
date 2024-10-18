@@ -32,7 +32,7 @@ Create `/vars/factorio.yml` using the given example file and adjust as needed.
 | `cf_api_token` | Your CloudFlare API Token. | <cf_token> |
 | `cf_zone` | Your CloudFlare DNS Zone. | "example.com" |
 | `cf_record` | Your subdomain for the DNS Zone. | "factorio" |
-| `factorio_servername` | Your Factorio server name, optional. | "HCloud Factrrio Server" |
+| `factorio_servername` | Your Factorio server name, optional. | "HCloud Factorio Server" |
 | `factorio_serverdescription` | Your Factorio server description, optional. | "Thrifty Hetzner Cloud Factorio Server" |
 | `factorio_username` | Your Factorio.com username. | <factorio_username> |
 | `factorio_token` | Your Factorio.com token. | <factorio_token> |
