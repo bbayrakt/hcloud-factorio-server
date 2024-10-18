@@ -33,10 +33,10 @@
         provider_upgrade: true
         variables:
           hcloud_api_token: "{{ lookup('env', 'TF_VAR_hcloud_api_token') }}"
-          server_type: "{{ server_type }}"
-          datacenter: "{{ datacenter }}"
-          image: "{{ image }}"
-          pub_ssh_key: "{{ pub_ssh_key }}"
+          server_type: "{{ hcloud_server_type }}"
+          datacenter: "{{ hcloud_datacenter }}"
+          image: "{{ hcloud_image }}"
+          pub_ssh_key: "{{ hcloud_pub_ssh_key }}"
         backend_config:
           address: "{{ tf_address }}"
           lock_address: "{{ tf_lock_address }}"
