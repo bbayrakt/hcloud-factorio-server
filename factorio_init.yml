@@ -6,77 +6,10 @@
   vars_files:
     - vars/factorio.yml
 
+  roles:
+    - server_init
+
   tasks:
-    - name: Deploy server and components
-      community.general.terraform:
-        project_path: "{{ terraform_directory }}"
-        state: present
-        force_init: true
-        provider_upgrade: true
-        variables:
-          hcloud_api_token: "{{ lookup('env', 'TF_VAR_hcloud_api_token') }}"
-          server_type: "{{ hcloud_server_type }}"
-          datacenter: "{{ hcloud_datacenter }}"
-          image: "{{ hcloud_image }}"
-          pub_ssh_key: "{{ hcloud_pub_ssh_key }}"
-        backend_config:
-          address: "{{ tf_address }}"
-          lock_address: "{{ tf_lock_address }}"
-          unlock_address: "{{ tf_lock_address }}"
-          username: "{{ tf_username }}"
-          password: "{{ tf_token }}"
-          lock_method: "POST"
-          unlock_method: "DELETE"
-          retry_wait_min: "5"
-
-    - name: Get the public IPv4 address of Factorio server
-      ansible.builtin.command: terraform output -raw ipv4_address
-      register: factorio_ipv4
-      args:
-        chdir: "{{ terraform_directory }}"
-      changed_when: false
-      failed_when: factorio_ipv4.rc != 0
-
-    - name: Get the public IPv6 address of Factorio server
-      ansible.builtin.command: terraform output -raw ipv6_address
-      register: factorio_ipv6
-      args:
-        chdir: "{{ terraform_directory }}"
-      changed_when: false
-      failed_when: factorio_ipv4.rc != 0
-
-    - name: Create CloudFlare DNS A record
-      community.general.cloudflare_dns:
-        zone: "{{ cf_zone }}"
-        record: "{{ cf_record }}"
-        type: A
-        value: "{{ factorio_ipv4.stdout }}"
-        api_token: "{{ cf_api_token }}"
-        ttl: 120
-      when:
-        - cf_api_token is defined
-        - cf_api_token != ''
-        - cf_zone is defined
-        - cf_zone != ''
-        - cf_record is defined
-        - cf_record != ''
-
-    - name: Create CloudFlare DNS AAAA record
-      community.general.cloudflare_dns:
-        zone: "{{ cf_zone }}"
-        record: "{{ cf_record }}"
-        type: AAAA
-        value: "{{ factorio_ipv6.stdout }}"
-        api_token: "{{ cf_api_token }}"
-        ttl: 120
-      when:
-        - cf_api_token is defined
-        - cf_api_token != ''
-        - cf_zone is defined
-        - cf_zone != ''
-        - cf_record is defined
-        - cf_record != ''
-
     - name: Wait for server to come online
       ansible.builtin.wait_for:
         host: "{{ factorio_ipv4.stdout }}"
