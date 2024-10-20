@@ -1,0 +1,59 @@
+---
+- name: Save the game
+  ansible.builtin.shell: |
+    set -o pipefail
+    docker run -it outdead/rcon \
+    ./rcon -a $(hostname -I | awk '{print $1}'):27015 -p $(cat /opt/factorio/config/rconpw) \
+    "/save ansible_managed_save.zip"
+  args:
+    executable: /bin/bash
+  register: save_file
+  changed_when: save_file.rc != 0
+
+- name: Download the save file
+  ansible.builtin.fetch:
+    src: /opt/factorio/saves/ansible_managed_save.zip
+    dest: "{{ playbook_dir }}/"
+    flat: true
+  delegate_to: localhost
+
+- name: Delete HCloud Server
+  hetzner.hcloud.server:
+    name: factorio
+    api_token: "{{ hcloud_api_token }}"
+    state: absent
+    location: "fsn1"
+    labels:
+      role: "ansible_managed_vm"
+  delegate_to: localhost
+
+- name: Delete HCloud Firewall
+  hetzner.hcloud.firewall:
+    name: factorio-firewall
+    state: absent
+    api_token: "{{ hcloud_api_token }}"
+  delegate_to: localhost
+
+- name: Delete HCloud SSH key
+  hetzner.hcloud.ssh_key:
+    name: factorio-sshkey
+    state: absent
+    api_token: "{{ hcloud_api_token }}"
+  delegate_to: localhost
+
+- name: Delete CloudFlare DNS A record
+  community.general.cloudflare_dns:
+    zone: "{{ cf_zone }}"
+    record: "{{ cf_record }}"
+    type: A
+    api_token: "{{ cf_api_token }}"
+    ttl: 120
+    state: absent
+  when:
+    - cf_api_token is defined
+    - cf_api_token != ''
+    - cf_zone is defined
+    - cf_zone != ''
+    - cf_record is defined
+    - cf_record != ''
+  delegate_to: localhost
