@@ -25,8 +25,6 @@
         source_ips:
           - 0.0.0.0/0
           - ::/0
-  async: 300
-  poll: 0
   register: hcloud_firewall
 
 - name: Create HCloud SSH key
@@ -35,44 +33,7 @@
     state: present
     api_token: "{{ hcloud_api_token }}"
     public_key: "{{ lookup('ansible.builtin.file', '{{ hcloud_pub_ssh_key }}') }}"
-  async: 300
-  poll: 0
   register: hcloud_ssh_key
-
-- name: Create HCloud IPv4 address
-  hetzner.hcloud.primary_ip:
-    name: factorio-ipv4
-    state: present
-    api_token: "{{ hcloud_api_token }}"
-    datacenter: "{{ hcloud_datacenter }}"
-    type: ipv4
-  async: 300
-  poll: 0
-  register: hcloud_ipv4
-
-- name: Create HCloud IPv6 address
-  hetzner.hcloud.primary_ip:
-    name: factorio-ipv6
-    state: present
-    api_token: "{{ hcloud_api_token }}"
-    datacenter: "{{ hcloud_datacenter }}"
-    type: ipv6
-  async: 300
-  poll: 0
-  register: hcloud_ipv6
-
-- name: Wait for async tasks to finish
-  ansible.builtin.async_status:
-    jid: "{{ item.ansible_job_id }}"
-  register: hcloud_async
-  until: hcloud_async.finished
-  retries: 30
-  delay: 2
-  with_items:
-    - "{{ hcloud_firewall }}"
-    - "{{ hcloud_ssh_key }}"
-    - "{{ hcloud_ipv4 }}"
-    - "{{ hcloud_ipv6 }}"
 
 - name: Create HCloud Server
   hetzner.hcloud.server:
@@ -81,37 +42,22 @@
     state: present
     server_type: "{{ hcloud_server_type }}"
     image: "{{ hcloud_image }}"
-    location: "{{ hcloud_datacenter }}"
-    ipv4: "{{ hcloud_async.results | selectattr('ansible_job_id', 'equalto', hcloud_ipv4.ansible_job_id) | map(attribute='hcloud_primary_ip.id') | first }}"
-    ipv6: "{{ hcloud_async.results | selectattr('ansible_job_id', 'equalto', hcloud_ipv6.ansible_job_id) | map(attribute='hcloud_primary_ip.id') | first }}"
+    location: "fsn1"
     firewalls:
-      - "{{ hcloud_async.results | selectattr('ansible_job_id', 'equalto', hcloud_firewall.ansible_job_id) | map(attribute='hcloud_firewall.id') | first }}"
+      - "{{ hcloud_firewall.hcloud_firewall.id }}"
     ssh_keys:
-      - "{{ hcloud_async.results | selectattr('ansible_job_id', 'equalto', hcloud_ssh_key.ansible_job_id) | map(attribute='hcloud_ssh_key.id') | first }}"
+      - "{{ hcloud_ssh_key.hcloud_ssh_key.id }}"
+    labels:
+      role: "ansible_managed_vm"
   register: hcloud_server
 
 - name: Create CloudFlare DNS A record
   community.general.cloudflare_dns:
     zone: "{{ cf_zone }}"
     record: "{{ cf_record }}"
+    state: present
     type: A
-    value: "{{ hcloud_async.results | selectattr('ansible_job_id', 'equalto', hcloud_ipv4.ansible_job_id) | map(attribute='hcloud_primary_ip.ip') | first }}"
-    api_token: "{{ cf_api_token }}"
-    ttl: 120
-  when:
-    - cf_api_token is defined
-    - cf_api_token != ''
-    - cf_zone is defined
-    - cf_zone != ''
-    - cf_record is defined
-    - cf_record != ''
-
-- name: Create CloudFlare DNS AAAA record
-  community.general.cloudflare_dns:
-    zone: "{{ cf_zone }}"
-    record: "{{ cf_record }}"
-    type: AAAA
-    value: "{{ hcloud_async.results | selectattr('ansible_job_id', 'equalto', hcloud_ipv6.ansible_job_id) | map(attribute='hcloud_primary_ip.ip') | first }}"
+    value: "{{ hcloud_server.hcloud_server.ipv4_address }}"
     api_token: "{{ cf_api_token }}"
     ttl: 120
   when:
@@ -124,6 +70,6 @@
 
 - name: Wait for server to come online
   ansible.builtin.wait_for:
-    host: "{{ factorio_ipv4.stdout }}"
+    host: "{{ hcloud_server.hcloud_server.ipv4_address }}"
     port: 22
     delay: 10
