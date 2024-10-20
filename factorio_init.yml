@@ -10,12 +10,6 @@
     - server_init
 
   tasks:
-    - name: Wait for server to come online
-      ansible.builtin.wait_for:
-        host: "{{ factorio_ipv4.stdout }}"
-        port: 22
-        delay: 10
-
     - name: Refresh Ansible inventory
       ansible.builtin.meta: "refresh_inventory"
 
