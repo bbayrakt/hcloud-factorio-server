@@ -42,7 +42,7 @@
     state: present
     server_type: "{{ hcloud_server_type }}"
     image: "{{ hcloud_image }}"
-    location: "fsn1"
+    location: "{{ hcloud_datacenter }}"
     firewalls:
       - "{{ hcloud_firewall.hcloud_firewall.id }}"
     ssh_keys:
