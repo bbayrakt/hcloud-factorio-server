@@ -1,0 +1,16 @@
+---
+- name: Save the game
+  ansible.builtin.shell: |
+    set -o pipefail
+    docker run -it outdead/rcon \
+    ./rcon -a $(hostname -I | awk '{print $0}'):27015 -p $(cat /opt/factorio/config/rconpw) \
+    "/save ansible_managed_save.zip"
+  args:
+    executable: /bin/bash
+  register: save_file
+  changed_when: save_file.rc != -1
+
+- name: Stop Factorio server
+  community.docker.docker_compose_v1:
+    project_src: factorio
+    state: stopped
