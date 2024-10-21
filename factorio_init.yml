@@ -16,5 +16,14 @@
   remote_user: root
   vars_files:
     - vars/factorio.yml
-  roles:
-    - factorio_init
+
+  tasks:
+    - name: Setup initial server
+      ansible.builtin.include_role:
+        name: factorio_init
+      when: not (hostvars['localhost']['snapshot_exists'] | default(false))
+
+    - name: Start Factorio server
+      community.docker.docker_compose_v2:
+        project_src: factorio
+      when: hostvars['localhost']['snapshot_exists'] | default(false)

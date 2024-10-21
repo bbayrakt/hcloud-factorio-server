@@ -35,6 +35,18 @@
     public_key: "{{ lookup('ansible.builtin.file', '{{ hcloud_pub_ssh_key }}') }}"
   register: hcloud_ssh_key
 
+- name: Check if snapshot exists
+  hetzner.hcloud.image_info:
+    type: snapshot
+    api_token: "{{ hcloud_api_token }}"
+  register: image_info
+
+- name: Set fact if snapshot exists
+  ansible.builtin.set_fact:
+    snapshot_exists: true
+    hcloud_image: "{{ image_info.hcloud_image_info[0].id }}"
+  when: image_info.hcloud_image_info | length > 0
+
 - name: Create HCloud Server
   hetzner.hcloud.server:
     name: factorio
