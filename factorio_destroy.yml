@@ -1,8 +1,6 @@
 ---
 - name: Save game from Factorio server
   hosts: ansible_managed_vm
-  vars:
-    terraform_directory: "{{ playbook_dir }}/terraform"
   vars_files:
     - vars/factorio.yml
   remote_user: root

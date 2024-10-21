@@ -1,8 +1,6 @@
 ---
 - name: Deploy Factorio server
   hosts: localhost
-  vars:
-    terraform_directory: "{{ playbook_dir }}/terraform"
   vars_files:
     - vars/factorio.yml
 
