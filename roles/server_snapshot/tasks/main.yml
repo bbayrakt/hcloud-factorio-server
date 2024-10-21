@@ -37,16 +37,6 @@
       Authorization: "Bearer {{ hcloud_api_token }}"
     return_content: true
   no_log: true
-  register: snapshot_status_response_debug
-
-- name: Wait for snapshot creation to be completed
-  ansible.builtin.uri:
-    url: "https://api.hetzner.cloud/v1/actions/{{ action_id }}"
-    method: GET
-    headers:
-      Authorization: "Bearer {{ hcloud_api_token }}"
-    return_content: true
-  no_log: true
   register: snapshot_status_response
   until: snapshot_status_response.json.action.status == "success"
   retries: 60
