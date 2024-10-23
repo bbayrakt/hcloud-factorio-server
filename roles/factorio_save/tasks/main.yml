@@ -1,16 +1,29 @@
 ---
-- name: Save the game
-  ansible.builtin.shell: |
-    set -o pipefail
-    docker run -it outdead/rcon \
-    ./rcon -a $(hostname -I | awk '{print $1}'):27015 -p $(cat /opt/factorio/config/rconpw) \
-    "/save ansible_managed_save.zip"
-  args:
-    executable: /bin/bash
+- name: Read RCON password
+  ansible.builtin.slurp:
+    src: /opt/factorio/config/rconpw
+  register: rcon_password
+  no_log: true
+
+- name: Save the game using community.docker
+  community.docker.docker_container:
+    name: rcon
+    image: outdead/rcon
+    interactive: true
+    network_mode: host
+    command: |
+      ./rcon -a localhost:27015 -p "{{ rcon_password.content | b64decode | trim }}" "/save ansible_managed_save.zip"
+    tty: true
   register: save_file
-  changed_when: save_file.rc != -1
+  no_log: true
 
 - name: Stop Factorio server
   community.docker.docker_compose_v2:
     project_src: factorio
     state: stopped
+
+- name: Download save file
+  ansible.builtin.fetch:
+    src: /opt/factorio/saves/ansible_managed_save.zip
+    dest: "{{ playbook_dir }}/"
+    flat: true
