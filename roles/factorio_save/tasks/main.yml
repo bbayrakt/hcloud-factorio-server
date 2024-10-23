@@ -5,7 +5,7 @@
   register: rcon_password
   no_log: true
 
-- name: Save the game using community.docker
+- name: Save the game using RCON
   community.docker.docker_container:
     name: rcon
     image: outdead/rcon
