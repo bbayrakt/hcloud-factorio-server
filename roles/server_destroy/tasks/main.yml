@@ -4,7 +4,7 @@
     name: factorio
     api_token: "{{ hcloud_api_token }}"
     state: absent
-    location: "fsn1"
+    location: "{{ hcloud_datacenter }}"
     labels:
       role: "ansible_managed_vm"
 
