@@ -1,3 +1,4 @@
+.vscode
 vars/factorio.yml
 ansible_managed_save.zip
 TODO

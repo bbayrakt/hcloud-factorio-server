@@ -11,9 +11,7 @@ way to prepare for a game about automation by automating the deployment of a gam
 
 ## Prerequisites
 - Ansible
-- Terraform
 - Hetzner Cloud account & API key
-- GitLab Repo (Using this for the remote state storage)
 - CloudFlare DNS (Optional)
 
 ## Variables
@@ -21,14 +19,11 @@ Create `/vars/factorio.yml` using the given example file and adjust as needed.
 
 | Variable | Description | Example |
 | -------- | ----------- | ------- |
+| `hcloud_api_token` | Put this value in your environment variables as `HCLOUD_TOKEN` | `export HCLOUD_TOKEN=xxxxxx` |
 | `hcloud_server_type` | Server type. The playbook only supports x86, as ARM support for Factorio server is experimental. List of server types: https://docs.hetzner.com/cloud/servers/overview/ | "cx32" |
-| `hcloud_datacenter` | Datacenter to deploy in. A list of available locations: https://docs.hetzner.com/cloud/general/locations/ | "fsn1-dc14" |
+| `hcloud_datacenter` | Datacenter to deploy in. A list of available locations: https://docs.hetzner.com/cloud/general/locations/ | "fsn1" |
 | `hcloud_image` | VM image to use. The playbook is written with "docker-ce" in mind only at the moment. | "docker-ce" |
 | `hcloud_pub_ssh_key` | Path to your SSH public key to upload to the VM. | "~/.ssh/id_rsa.pub" |
-| `tf_address` | Path to your GitLab Terraform state backend. | "https://gitlab.com/api/v4/projects/xxxxx/terraform/state/default" |
-| `tf_lock_address` | Path to your GitLab Terraform lock/unlock backend. | "https://gitlab.com/api/v4/projects/xxxxxx/terraform/state/default/lock" |
-| `tf_username` | Your GitLab username. | <gitlab_username> |
-| `tf_password` | Your GitLab token. | "glpat-xxxxxxx" |
 | `cf_api_token` | Your CloudFlare API Token. | <cf_token> |
 | `cf_zone` | Your CloudFlare DNS Zone. | "example.com" |
 | `cf_record` | Your subdomain for the DNS Zone. | "factorio" |
@@ -45,10 +40,17 @@ Create `/vars/factorio.yml` using the given example file and adjust as needed.
 ## Usage
 For creating a server, run the following:
 ```
-export TF_VAR_hcloud_api_token=<your_hcloud_api_key>
+export HCLOUD_TOKEN=<your_hcloud_api_key>
 ansible-playbook factorio_init.yml
 ```
-This will start your server - if you have a preexisting save, just place it in the root of this project's folder and rename it to `ansible_managed_save.zip`. The server will then start with that save file.
+This will start your server - if you have a preexisting save, just place it in the root of this project's folder and rename it to `ansible_managed_save.zip`. The server will then start with that save file. If you have an existing Ansible managed server snapshot on Hetzner, that server will be started instead.
+
+For saving the game and snapshotting the server, run the following:
+```
+export HCLOUD_TOKEN=<your_hcloud_api_key>
+ansible-playbook factorio_snapshot.yml
+```
+This will save the game locally (just in case!) and snapshot your server, and delete the server. Deletion is necessary to not pay money on server costs - simply turning off the server still costs the full amount on Hetzner Cloud. Having a snapshot costs a marginal amount of money, but you'll want to delete that if you don't plan on playing for a longer period of time or you are finished with playing.
 
 For deleting the server and all related resources (and saving the game before doing so), run:
 ```
