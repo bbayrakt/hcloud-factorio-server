@@ -1,0 +1,50 @@
+---
+- name: Stop HCloud server
+  hetzner.hcloud.server:
+    name: factorio
+    api_token: "{{ hcloud_api_token }}"
+    state: stopped
+  register: hcloud_server
+
+# No HCloud Ansible module for snapshotting, so direct API call
+- name: Create snapshot of server
+  ansible.builtin.uri:
+    url: "https://api.hetzner.cloud/v1/servers/{{ hcloud_server.hcloud_server.id }}/actions/create_image"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ hcloud_api_token }}"
+      Content-Type: application/json
+    body_format: json
+    body: |
+      {
+        "description": "factorio-snapshot",
+        "type": "snapshot"
+      }
+    return_content: true
+    status_code: [201]
+  no_log: true
+  register: snapshot_creation_response
+
+- name: Extract action ID from response
+  ansible.builtin.set_fact:
+    action_id: "{{ snapshot_creation_response.json.action.id }}"
+
+- name: Wait for snapshot creation to be completed
+  ansible.builtin.uri:
+    url: "https://api.hetzner.cloud/v1/actions/{{ action_id }}"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ hcloud_api_token }}"
+    return_content: true
+  no_log: true
+  register: snapshot_status_response
+  until: snapshot_status_response.json.action.status == "success"
+  retries: 60
+  delay: 10 # Wait for up to 10 min
+
+- name: Delete HCloud server
+  hetzner.hcloud.server:
+    name: factorio
+    api_token: "{{ hcloud_api_token }}"
+    state: absent
+  register: hcloud_server

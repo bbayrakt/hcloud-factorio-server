@@ -1,14 +1,9 @@
 # Hetzner Cloud
+hcloud_api_token: "{{ lookup('ansible.builtin.env', 'HCLOUD_TOKEN') }}"
 hcloud_server_type: "cx32"
-hcloud_datacenter: "fsn1-dc14"
+hcloud_datacenter: "fsn1"
 hcloud_image: "docker-ce"
 hcloud_pub_ssh_key: "~/.ssh/id_rsa.pub"
-
-# GitLab Terraform State Backend
-tf_address: "https://gitlab.com/api/v4/projects/xxxxx/terraform/state/default"
-tf_lock_address: "https://gitlab.com/api/v4/projects/xxxxxx/terraform/state/default/lock"
-tf_username: "xxxxxx"
-tf_password: "glpat-xxxxxxx"
 
 # CloudFlare DNS - OPTIONAL
 cf_api_token: "xxxxxxxx"

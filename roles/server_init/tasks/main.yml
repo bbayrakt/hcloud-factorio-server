@@ -1,0 +1,87 @@
+---
+- name: Create HCloud Firewall
+  hetzner.hcloud.firewall:
+    name: factorio-firewall
+    state: present
+    api_token: "{{ hcloud_api_token }}"
+    rules:
+      - description: ICMP
+        direction: in
+        protocol: icmp
+        source_ips:
+          - 0.0.0.0/0
+          - ::/0
+      - description: Factorio Server Port
+        direction: in
+        protocol: udp
+        port: 34197
+        source_ips:
+          - 0.0.0.0/0
+          - ::/0
+      - description: SSH
+        direction: in
+        protocol: tcp
+        port: 22
+        source_ips:
+          - 0.0.0.0/0
+          - ::/0
+  register: hcloud_firewall
+
+- name: Create HCloud SSH key
+  hetzner.hcloud.ssh_key:
+    name: factorio-sshkey
+    state: present
+    api_token: "{{ hcloud_api_token }}"
+    public_key: "{{ lookup('ansible.builtin.file', '{{ hcloud_pub_ssh_key }}') }}"
+  register: hcloud_ssh_key
+
+- name: Check if snapshot exists
+  hetzner.hcloud.image_info:
+    type: snapshot
+    api_token: "{{ hcloud_api_token }}"
+  register: image_info
+
+- name: Set fact if snapshot exists
+  ansible.builtin.set_fact:
+    snapshot_exists: true
+    hcloud_image: "{{ image_info.hcloud_image_info[0].id }}"
+  when: image_info.hcloud_image_info | length > 0
+
+- name: Create HCloud Server
+  hetzner.hcloud.server:
+    name: factorio
+    api_token: "{{ hcloud_api_token }}"
+    state: present
+    server_type: "{{ hcloud_server_type }}"
+    image: "{{ hcloud_image }}"
+    location: "{{ hcloud_datacenter }}"
+    firewalls:
+      - "{{ hcloud_firewall.hcloud_firewall.id }}"
+    ssh_keys:
+      - "{{ hcloud_ssh_key.hcloud_ssh_key.id }}"
+    labels:
+      role: "ansible_managed_vm"
+  register: hcloud_server
+
+- name: Create CloudFlare DNS A record
+  community.general.cloudflare_dns:
+    zone: "{{ cf_zone }}"
+    record: "{{ cf_record }}"
+    state: present
+    type: A
+    value: "{{ hcloud_server.hcloud_server.ipv4_address }}"
+    api_token: "{{ cf_api_token }}"
+    ttl: 120
+  when:
+    - cf_api_token is defined
+    - cf_api_token != ''
+    - cf_zone is defined
+    - cf_zone != ''
+    - cf_record is defined
+    - cf_record != ''
+
+- name: Wait for server to come online
+  ansible.builtin.wait_for:
+    host: "{{ hcloud_server.hcloud_server.ipv4_address }}"
+    port: 22
+    delay: 10

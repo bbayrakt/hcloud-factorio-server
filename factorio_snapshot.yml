@@ -1,17 +1,16 @@
 ---
-- name: Save game from Factorio server
+- name: Save the game
   hosts: ansible_managed_vm
+  remote_user: root
   vars_files:
     - vars/factorio.yml
-  remote_user: root
-
   roles:
     - factorio_save
 
-- name: Destroy Factorio server
+- name: Snapshot and delete Factorio server
   hosts: localhost
   vars_files:
     - vars/factorio.yml
 
   roles:
-    - server_destroy
+    - server_snapshot

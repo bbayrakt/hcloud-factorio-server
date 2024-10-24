@@ -1,0 +1,37 @@
+---
+- name: Delete HCloud Server
+  hetzner.hcloud.server:
+    name: factorio
+    api_token: "{{ hcloud_api_token }}"
+    state: absent
+    location: "{{ hcloud_datacenter }}"
+    labels:
+      role: "ansible_managed_vm"
+
+- name: Delete HCloud Firewall
+  hetzner.hcloud.firewall:
+    name: factorio-firewall
+    state: absent
+    api_token: "{{ hcloud_api_token }}"
+
+- name: Delete HCloud SSH key
+  hetzner.hcloud.ssh_key:
+    name: factorio-sshkey
+    state: absent
+    api_token: "{{ hcloud_api_token }}"
+
+- name: Delete CloudFlare DNS A record
+  community.general.cloudflare_dns:
+    zone: "{{ cf_zone }}"
+    record: "{{ cf_record }}"
+    type: A
+    api_token: "{{ cf_api_token }}"
+    ttl: 120
+    state: absent
+  when:
+    - cf_api_token is defined
+    - cf_api_token != ''
+    - cf_zone is defined
+    - cf_zone != ''
+    - cf_record is defined
+    - cf_record != ''
