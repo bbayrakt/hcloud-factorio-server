@@ -8,6 +8,30 @@
     labels:
       role: "ansible_managed_vm"
 
+- name: Check if snapshot exists
+  hetzner.hcloud.image_info:
+    type: snapshot
+    api_token: "{{ hcloud_api_token }}"
+  register: image_info
+
+- name: Set fact if snapshot exists
+  ansible.builtin.set_fact:
+    snapshot_exists: true
+    hcloud_image: "{{ image_info.hcloud_image_info[0].id }}"
+  when: image_info.hcloud_image_info | length > 0
+
+- name: Delete snapshot
+  ansible.builtin.uri:
+    url: "https://api.hetzner.cloud/v1/images/{{ hcloud_image }}"
+    method: DELETE
+    headers:
+      Authorization: "Bearer {{ hcloud_api_token }}"
+    return_content: true
+    status_code: [204]
+  no_log: true
+  register: snapshot_deletion_response
+  when: snapshot_exists
+
 - name: Delete HCloud Firewall
   hetzner.hcloud.firewall:
     name: factorio-firewall

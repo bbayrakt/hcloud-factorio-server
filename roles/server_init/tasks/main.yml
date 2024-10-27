@@ -63,6 +63,18 @@
       role: "ansible_managed_vm"
   register: hcloud_server
 
+- name: Delete snapshot
+  ansible.builtin.uri:
+    url: "https://api.hetzner.cloud/v1/images/{{ hcloud_image }}"
+    method: DELETE
+    headers:
+      Authorization: "Bearer {{ hcloud_api_token }}"
+    return_content: true
+    status_code: [204]
+  no_log: true
+  register: snapshot_deletion_response
+  when: snapshot_exists
+
 - name: Create CloudFlare DNS A record
   community.general.cloudflare_dns:
     zone: "{{ cf_zone }}"
